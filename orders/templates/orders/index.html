@@ -1,0 +1,80 @@
+{% extends "orders/layout.html" %}
+
+{% block title %}
+Register
+{% endblock %}
+
+{% block body %}
+<nav>
+	<a href="{% url 'index' %}">Home</a>
+	<a href="{% url 'shoppingcart' %}">Cart</a>
+	<a href="{% url 'logout' %}">Logout</a>
+	<span id="user">{{ user.username }}</span>
+</nav>
+<h1>Welcome to Artichoke Basielle Pizza</h1>
+
+<h2>Menu</h2>
+
+<form action="{% url 'addtocart' %}" method="post">
+	{% csrf_token %}
+	<select name="pizza">
+		{% for pizza in pizzas %}
+			<option value="{{ pizza.id }}">{{ pizza }}</option>
+		{% endfor %}
+	</select>
+	<select name="size">
+		<option value="small">Small</option>
+		<option value="large">Large</option>
+	</select>
+	<input type="submit" value="Add to Cart">
+</form>
+<h3></h3>
+
+
+<script>
+	// Find the CSRF Token cookie value
+	function parse_cookies() {
+	    var cookies = {};
+	    if (document.cookie && document.cookie !== '') {
+	        document.cookie.split(';').forEach(function (c) {
+	            var m = c.trim().match(/(\w+)=(.*)/);
+	            if(m !== undefined) {
+	                cookies[m[1]] = decodeURIComponent(m[2]);
+	            }
+	        });
+	    }
+	    return cookies;
+	}
+	var cookies = parse_cookies();
+	
+
+	document.addEventListener('DOMContentLoaded', function() {
+		
+		document.querySelectorAll('select').forEach(function(element){
+			element.addEventListener('change', function() {
+				type = document.querySelectorAll('select')[0].value;
+				size = document.querySelectorAll('select')[1].value;
+				h3 = document.querySelector('h3');
+
+				const request = new XMLHttpRequest();
+				request.open('POST','/ajax');
+				request.setRequestHeader('X-CSRFToken', cookies['csrftoken']); 
+				request.onload = function() {
+					
+					// const info = JSON.parse(request.responseText);
+					// const price = info.price;
+					price = request.responseText;
+					h3.innerHTML = "Price: $" + price;
+
+				};
+
+				const data = new FormData();
+				data.append('type', type);
+				data.append('size', size);
+				data.append('token', "{% csrf_token %}")
+				request.send(data);
+			});
+		});
+	});
+</script>
+{% endblock %}
