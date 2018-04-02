@@ -22,7 +22,7 @@ h1, h2, h3 {
 	font-family: verdana;
 	font-weight: normal;
 }
-input, select {
+.input {
 	display: block;
 	margin: 10px auto;
 	width: 20%;
@@ -33,5 +33,19 @@ ul {
 }
 #price {
 	padding-left: 20px;
+}
+#toppings {
+	padding-left: 20px;
 	margin-bottom: 10px;
+}
+
+#checkbox {
+  margin-left:37%;
+}
+.checkbox {
+	width: 700px;
+	column-count: 3;
+	column-gap: 20px;
+	margin: 0 auto;
+	
 }

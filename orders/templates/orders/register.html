@@ -17,18 +17,18 @@ Register/Login
 <h2>Register</h2>
 <form action="{% url 'register' %}" method="post">
 	{% csrf_token %}
-	<input autofocus type="text" name="user">
-	<input type="password" name="pass">
-	<input type="submit" value="Register">
+	<input autofocus type="text" name="user" class="input">
+	<input type="password" name="pass" class="input">
+	<input type="submit" value="Register" class="input">
 </form>
 
 <h2>Or Log In</h2>
 
-<form action="{% url 'login' %}" method="post">
+<form action="{% url 'login' %}" method="post" >
 	{% csrf_token %}
-	<input type="text" name="user">
-	<input type="password" name="pass">
-	<input type="submit" value="Log In">
+	<input type="text" name="user" class="input">
+	<input type="password" name="pass" class="input">
+	<input type="submit" value="Log In" class="input">
 </form>
 
 

@@ -13,10 +13,26 @@ Register
 </nav>
 
 <h1>Shopping Cart</h1>
+<!-- Pizza -->
 <ul>
-{% for item in cart %}
-<li>{{ item.name }} Pizza    Details: {{ item.details }}</li>
-<li id="price">Price: ${{ item.price }}</li>
+{% for pizza in pizzas %}
+<li>{{ pizza.size}} {{ pizza.pizza }} {{ pizza.name }}  {{ pizza.items }} Pizza</li>
+<li id="price">Price: ${{ pizza.price }}</li>
+
+<!-- Toppings -->
+
+<li id="toppings">Toppings: 
+	{% for topping in pizza.topping_set %}
+		{{topping}}
+
+	{% empty %}
+	No toppings
+	{% endfor %}
+	
+</li>
+
+<br>
+
 {% empty %}
 <li>Cart empty</li>
 {% endfor %}
@@ -31,7 +47,7 @@ Register
 {% if total %}
 <form action="{% url 'checkout' %}", method="post">
 	{% csrf_token %}
-	<input type="submit" value="Checkout">
+	<input type="submit" value="Checkout" class="input">
 </form>
 {% endif %}
 

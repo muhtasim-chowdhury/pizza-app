@@ -15,22 +15,26 @@ def index(request):
 	# let user register
 	if not request.user.is_authenticated:
 		return render(request, "orders/register.html", {"message": None})
+
+
 	
+
+	Small = Size.objects.get(size="Small")
 	# if user is logged in, fetch user info and menu
 	context = {
 		"user": request.user,
-		"pizzas": Pizza.objects.all()
+		"pizzas": Pizza.objects.filter(size=Small, isMenu=True).all(),
+		"toppings": Topping.objects.all()
 	}
 
-
-	# fetch shopping cart
-	shopping_cart = Cart.objects.all()
-
-
+	# check if user has a cart object
 	try:
-		context["cart"] = shopping_cart
-	except KeyError:
-		context["cart"] = None
+		shopping_cart = Cart.objects.get(user=request.user)
+	except Cart.DoesNotExist:
+		# create one
+		shopping_cart = Cart(user=request.user)
+		shopping_cart.save()
+
 
 	return render(request, "orders/index.html", context)
 
@@ -49,6 +53,12 @@ def register(request):
 	u = User.objects.create_user(username=user, password=password)
 	u.save()
 	login(request, u)
+
+	# create a cart for them
+	shopping_cart = Cart(user=request.user)
+	shopping_cart.save()
+
+
 	return HttpResponseRedirect(reverse('index'))
 
 def login_view(request):
@@ -75,35 +85,87 @@ def ajax(request):
 	pizza_id = request.POST['type']
 	size = request.POST['size']
 	p = Pizza.objects.get(pk=pizza_id)
+
+
+	Large = Size.objects.get(size="Large")
+	if size=="Large":
+		p = Pizza.objects.get(pizza=p.pizza, items=p.items, size=Large)
+
+
+
 	
 
-	if size == 'small':
-		price = p.sprice
-	else:
-		price = p.lprice
-	return HttpResponse(str(price))
+	
+	return HttpResponse(str(p.price))
 	# return JsonResponse({ "price": str(price)})
 
 def addtocart(request):
+	# fetch pizza id for pizza that was selected
 	pizza_id = request.POST["pizza"]
+
+	# fetch corresponding small pizza
 	p = Pizza.objects.get(pk=pizza_id)
+
+	# fetch pizza size
 	size = request.POST["size"]
 
-	if size == 'small':
-		price = p.sprice
-	else:
-		price = p.lprice
+
+	# if size if large, get corresponding large pizza
+	Large = Size.objects.get(size="Large")
+	if size=="Large":
+		p = Pizza.objects.get(pizza=p.pizza, items=p.items, size=Large)
+
+
+
+	# fetch list of topping ids
+	toppings_id = request.POST.getlist('toppings')
+
+	# fetch corresponding toppings
+	toppings_array = []
+	for idd in toppings_id:
+		toppings_array.append(Topping.objects.get(pk=idd))
+
+
+	# create requested pizza
+	p.pk = None
+	p.isMenu = False
+	p.user = request.user
+	p.save()
+
+	# iterate through selected toppings and add to new pizza
+	for topping in toppings_array:
+		p.toppings.add(topping)
+
 
 
 
 	# update shopping cart in database
-	current = Cart(user=request.user, name=p, details=size.capitalize(), price=price)
-	current.save()
+	# shopping_cart = Cart(user=request.user)
+	# shopping_cart.save()
+	shopping_cart = Cart.objects.get(user=request.user)
+	shopping_cart.pizzas.add(p)
 
+	# getting current cart total price
+	price = shopping_cart.total
+
+	price += p.price
+
+	shopping_cart.total = price
+
+
+
+
+
+	Small = Size.objects.get(size="Small")
 	context = {
 		"user": request.user,
-		"pizzas": Pizza.objects.all(),
+		"pizzas": Pizza.objects.filter(size=Small, isMenu=True).all(),
+		"toppings": Topping.objects.all()
 	}
+
+
+
+
 
 	return render(request, "orders/index.html", context)
 
@@ -111,15 +173,19 @@ def addtocart(request):
 def shoppingcart(request):
 
 	# fetch everything in shopping cart
-	shopping_cart = Cart.objects.filter(user=request.user).all()
+	shopping_cart = Cart.objects.get(user=request.user)
+
+	#get pizzas in cart
+	pizzas = shopping_cart.pizzas.all()
+
 
 	total = 0
-	for item in shopping_cart:
-		total += item.price
+	for pizza in pizzas:
+		total += pizza.price
 
 
 	context = {
-		"cart": shopping_cart,
+		"pizzas": pizzas,
 		"total": total
 	}
 	return render(request, "orders/shoppingcart.html", context)
@@ -127,20 +193,100 @@ def shoppingcart(request):
 
 
 def checkout(request):
+	# fetch shopping cart items
+	shopping_cart = Cart.objects.get(user=request.user)
+	pizzas = shopping_cart.pizzas.all()
 
-	# fetch everything in shopping cart
-	shopping_cart = Cart.objects.filter(user=request.user).all()
+	# create Order object
+	order = Order(user=request.user)
+	order.save()
+
+	# add pizzas in cart to order
+	for p in pizzas:
+		p.id = None
+		p.save()
+		order.pizzas.add(p)
+
+
+	# delete cart items
+	pizzas.delete()
+
+	# return user to homepage
+	return HttpResponseRedirect(reverse('index'))
 
 
 
-	# add shopping cart items to orders
-	for item in shopping_cart:
-		current = Order(user=request.user, name=item.name, details=item.details, price=item.price)
-		current.save()
 
 
-	# delete items from current user's shopping cart since they have been bought
-	Cart.objects.filter(user=request.user).delete()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	# # fetch everything in shopping cart
+	# shopping_cart = Cart.objects.get(user=request.user)
+
+	# pizzas = shopping_cart.pizzas.all()
+
+	# # add shopping cart items to orders
+	# o = Order(user=request.user)
+	# o.save()
+
+	# for pizza in pizzas:
+	# 	o.pizzas.add(pizza)
+
+	# o.save()
+	# # you have to save u dumbass for any change whatsoever
+
+
+
+
+
+
+	# # delete items from current user's shopping cart since they have been bought
+	# pizzas.delete()
 
 
 	return HttpResponseRedirect(reverse('index'))

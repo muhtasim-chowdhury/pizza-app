@@ -17,16 +17,25 @@ Register
 
 <form action="{% url 'addtocart' %}" method="post">
 	{% csrf_token %}
-	<select name="pizza">
+	<select name="pizza" class="input">
+			<option value="0">---------</option>
 		{% for pizza in pizzas %}
-			<option value="{{ pizza.id }}">{{ pizza }}</option>
+			<option value="{{ pizza.id }}">{{ pizza.pizza }} {{pizza.items}} Pizza</option>
 		{% endfor %}
-	</select>
-	<select name="size">
-		<option value="small">Small</option>
-		<option value="large">Large</option>
-	</select>
-	<input type="submit" value="Add to Cart">
+	</select class="input">
+	<select name="size" class="input">
+		<option value="0">---------</option>
+		<option value="Small">Small</option>
+		<option value="Large">Large</option>
+	</select><div class="checkbox">
+	{% for topping in toppings %}
+
+		<div id="checkbox"><input type="checkbox" value="{{ topping.id }}" name="toppings">{{ topping }}</div>
+	{% endfor %}
+	</div>
+
+
+	<input type="submit" value="Add to Cart" class="input">
 </form>
 <h3></h3>
 
@@ -46,15 +55,26 @@ Register
 	    return cookies;
 	}
 	var cookies = parse_cookies();
+
+	var type = document.querySelectorAll('select')[0].value;
+	var size = document.querySelectorAll('select')[1].value;
+	const h3 = document.querySelector('h3');
 	
 
 	document.addEventListener('DOMContentLoaded', function() {
 		
+		// configure typehead for price display
 		document.querySelectorAll('select').forEach(function(element){
 			element.addEventListener('change', function() {
+
 				type = document.querySelectorAll('select')[0].value;
 				size = document.querySelectorAll('select')[1].value;
-				h3 = document.querySelector('h3');
+				
+
+				if (type == 0 || size == 0) { 
+					h3.innerHTML = "";
+					return;
+				}
 
 				const request = new XMLHttpRequest();
 				request.open('POST','/ajax');
@@ -63,7 +83,7 @@ Register
 					
 					// const info = JSON.parse(request.responseText);
 					// const price = info.price;
-					price = request.responseText;
+					var price = request.responseText;
 					h3.innerHTML = "Price: $" + price;
 
 				};
@@ -75,6 +95,19 @@ Register
 				request.send(data);
 			});
 		});
+
+		// stop FORM from submitting if empty
+		document.querySelector('form').onsubmit = function() {
+			if (type == 0 || size == 0) { 
+					return false;
+				}
+			return true;
+		};
+
+
+
+
+
 	});
 </script>
 {% endblock %}
