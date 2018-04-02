@@ -4,7 +4,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from django.urls import reverse
 
-#import models
+
 from .models import *
 
 
@@ -89,15 +89,11 @@ def ajax(request):
 
 	Large = Size.objects.get(size="Large")
 	if size=="Large":
-		p = Pizza.objects.get(pizza=p.pizza, items=p.items, size=Large)
-
-
-
-	
+		p = Pizza.objects.get(pizza=p.pizza, items=p.items, size=Large, isMenu=True)
 
 	
 	return HttpResponse(str(p.price))
-	# return JsonResponse({ "price": str(price)})
+
 
 def addtocart(request):
 	# fetch pizza id for pizza that was selected
@@ -113,7 +109,7 @@ def addtocart(request):
 	# if size if large, get corresponding large pizza
 	Large = Size.objects.get(size="Large")
 	if size=="Large":
-		p = Pizza.objects.get(pizza=p.pizza, items=p.items, size=Large)
+		p = Pizza.objects.get(pizza=p.pizza, items=p.items, size=Large, isMenu=True)
 
 
 
@@ -122,37 +118,39 @@ def addtocart(request):
 
 	# fetch corresponding toppings
 	toppings_array = []
+	total = 0
 	for idd in toppings_id:
-		toppings_array.append(Topping.objects.get(pk=idd))
-
+		t = Topping.objects.get(pk=idd)
+		toppings_array.append(t)
+		total += t.price
 
 	# create requested pizza
 	p.pk = None
 	p.isMenu = False
 	p.user = request.user
+	p.price += total
 	p.save()
 
+
+	total = 0
 	# iterate through selected toppings and add to new pizza
 	for topping in toppings_array:
 		p.toppings.add(topping)
 
 
 
-
 	# update shopping cart in database
-	# shopping_cart = Cart(user=request.user)
-	# shopping_cart.save()
+
 	shopping_cart = Cart.objects.get(user=request.user)
 	shopping_cart.pizzas.add(p)
 
 	# getting current cart total price
-	price = shopping_cart.total
+	cartTotalPrice = shopping_cart.total
 
-	price += p.price
+	cartTotalPrice += p.price
 
-	shopping_cart.total = price
-
-
+	shopping_cart.total = cartTotalPrice
+	shopping_cart.save()
 
 
 
@@ -178,11 +176,7 @@ def shoppingcart(request):
 	#get pizzas in cart
 	pizzas = shopping_cart.pizzas.all()
 
-
-	total = 0
-	for pizza in pizzas:
-		total += pizza.price
-
+	total = shopping_cart.total
 
 	context = {
 		"pizzas": pizzas,
@@ -199,6 +193,7 @@ def checkout(request):
 
 	# create Order object
 	order = Order(user=request.user)
+	order.total = shopping_cart.total
 	order.save()
 
 	# add pizzas in cart to order
@@ -210,8 +205,10 @@ def checkout(request):
 
 	# delete cart items
 	pizzas.delete()
+	shopping_cart.total = 0
+	shopping_cart.save()
 
-	# return user to homepage
+
 	return HttpResponseRedirect(reverse('index'))
 
 

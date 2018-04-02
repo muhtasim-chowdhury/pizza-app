@@ -22,6 +22,7 @@ class Size(models.Model):
 
 class Topping(models.Model):
 	name = models.CharField(max_length=16)
+	price = models.DecimalField(max_digits=4, decimal_places=2, default=0.50)
 	
 
 	def __str__(self):
@@ -62,35 +63,5 @@ class Order(models.Model):
 		return self.user +"'s Order"
 
 
-
-
-
-
-
-
-
-
-
-# class Cart(models.Model):
-# 	# cart items
-# 	user = models.CharField(max_length=20, blank=True)
-# 	name = models.CharField(max_length=15)
-# 	details = models.CharField(max_length=40, blank=True)
-# 	price = models.DecimalField(max_digits=4, decimal_places=2)
-	
-
-# 	def __str__(self):
-# 		return f"{self.name} {self.details} {self.price}"
-
-
-
-
-# class Order(models.Model):
-# 	# order items
-# 	user = models.CharField(max_length=20)
-# 	name = models.CharField(max_length=15)
-# 	details = models.CharField(max_length=40, blank=True)
-# 	price = models.DecimalField(max_digits=4, decimal_places=2)
-	
-# 	def __str__(self):
-# 		return f"{self.name} {self.details} {self.price}"
+# models must be saved using save() if they are created or updated with a new value for one of the fields
+# however if you are mapping models instances to other model instances such as with array using keyword "ManyToMany" then u don't need to use "save()" to keep the changes
