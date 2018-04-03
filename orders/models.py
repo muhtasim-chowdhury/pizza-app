@@ -46,6 +46,37 @@ class Pizza(models.Model):
 		return f"{self.size} {self.pizza} {self.items} Menu: {self.isMenu}"
 
 
+class SubKind(models.Model):
+	name = models.CharField(max_length=20)
+	def __str__(self):
+		return self.name
+
+
+class Sub(models.Model):
+	isMenu = models.BooleanField(default=True)
+	kind = models.ForeignKey(SubKind, on_delete=models.CASCADE)
+	size = models.ForeignKey(Size, on_delete=models.CASCADE)
+	price = models.DecimalField(max_digits=4, decimal_places=2, default=6.50)
+
+	def __str__(self):
+		return f"{self.size}  {self.kind} Sub Menu: {self.isMenu}"
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 class Cart(models.Model):
 	user = models.CharField(max_length=15, blank=True)
 	pizzas = models.ManyToManyField(Pizza, blank=True)

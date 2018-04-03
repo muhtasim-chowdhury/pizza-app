@@ -24,7 +24,8 @@ def index(request):
 	context = {
 		"user": request.user,
 		"pizzas": Pizza.objects.filter(size=Small, isMenu=True).all(),
-		"toppings": Topping.objects.all()
+		"toppings": Topping.objects.all(),
+		"subs": Sub.objects.filter(isMenu=True).all()
 	}
 
 	# check if user has a cart object
@@ -83,16 +84,54 @@ def logout_view(request):
 def ajax(request):
 	# fetch form data
 	pizza_id = request.POST['type']
-	size = request.POST['size']
-	p = Pizza.objects.get(pk=pizza_id)
+	if pizza_id != '0':
+		size = request.POST['size']
+		p = Pizza.objects.get(pk=pizza_id)
 
 
-	Large = Size.objects.get(size="Large")
-	if size=="Large":
-		p = Pizza.objects.get(pizza=p.pizza, items=p.items, size=Large, isMenu=True)
+		# fetch list of topping ids
+		toppings_id = request.POST['toppings'].split(",")
+		
+		total = 0
+
+		if toppings_id[0] != '':
+			print(len(toppings_id))
+			# fetch corresponding toppings
+			for idd in toppings_id:
+				t = Topping.objects.get(pk=int(idd))
+				total += t.price
+
+		Large = Size.objects.get(size="Large")
+		if size=="Large":
+			p = Pizza.objects.get(pizza=p.pizza, items=p.items, size=Large, isMenu=True)
+
+		pizza_price = p.price
+	else:
+		pizza_price = 0
+		total = 0
+	# fetch sub price if selected
+	sub_id = request.POST['subs']
+	if sub_id != '0':
+		s = Sub.objects.get(pk=int(sub_id))
+		sp = s.price
+	else:
+		sp = 0
+
+
+
+
+
+
+
+
+
+
+
+
+	price = pizza_price + total + sp
 
 	
-	return HttpResponse(str(p.price))
+	return HttpResponse(str(price))
 
 
 def addtocart(request):

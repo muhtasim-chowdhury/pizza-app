@@ -22,17 +22,28 @@ Register
 		{% for pizza in pizzas %}
 			<option value="{{ pizza.id }}">{{ pizza.pizza }} {{pizza.items}} Pizza</option>
 		{% endfor %}
-	</select class="input">
+	</select>
 	<select name="size" class="input">
 		<option value="0">---------</option>
 		<option value="Small">Small</option>
 		<option value="Large">Large</option>
-	</select><div class="checkbox">
-	{% for topping in toppings %}
+	</select>
 
+	<!-- checkboxes -->
+	<div class="checkbox">
+	{% for topping in toppings %}
 		<div id="checkbox"><input type="checkbox" value="{{ topping.id }}" name="toppings">{{ topping }}</div>
 	{% endfor %}
 	</div>
+
+	<!-- subs -->
+	<select name="sub" class="input">
+			<option value="0">---------</option>
+		{% for sub in subs %}
+			<option value="{{ sub.id }}">{{ sub.size }} {{ sub.kind }} Sub</option>
+		{% endfor %}
+	</select>
+	
 
 
 	<input type="submit" value="Add to Cart" class="input">
@@ -56,45 +67,68 @@ Register
 	}
 	var cookies = parse_cookies();
 
-	var type = document.querySelectorAll('select')[0].value;
-	var size = document.querySelectorAll('select')[1].value;
+	var select = document.querySelectorAll('select');
+	var type = select[0].value;
+	var size = select[1].value;
+	var sub = select[2].value;
 	const h3 = document.querySelector('h3');
 	
+	// update total price
+	function update() {
+		select = document.querySelectorAll('select');
+		type = select[0].value;
+		size = select[1].value;
+		sub = select[2].value;
+
+		// fetch toppings from checked boxes
+		var t = document.getElementsByName('toppings');
+		var arr = []
+		for (var i = 0; i < t.length; i++) {
+			if (t[i].checked)
+				arr.push(t[i].value)
+		}
+		
+
+		if ((type == 0 || size == 0) && sub == 0) { 
+			h3.innerHTML = "";
+			return;
+		}
+
+		const request = new XMLHttpRequest();
+		request.open('POST','/ajax');
+		request.setRequestHeader('X-CSRFToken', cookies['csrftoken']); 
+		request.onload = function() {
+			
+			
+			var price = request.responseText;
+			h3.innerHTML = "Price: $" + price;
+
+		};
+
+		const data = new FormData();
+		data.append('type', type);
+		data.append('size', size);
+		// include toppings
+		data.append('toppings', arr);
+		// include subs
+		data.append('subs', sub);
+		data.append('token', "{% csrf_token %}")
+		request.send(data);
+	}
 
 	document.addEventListener('DOMContentLoaded', function() {
 		
 		// configure typehead for price display
 		document.querySelectorAll('select').forEach(function(element){
-			element.addEventListener('change', function() {
-
-				type = document.querySelectorAll('select')[0].value;
-				size = document.querySelectorAll('select')[1].value;
-				
-
-				if (type == 0 || size == 0) { 
-					h3.innerHTML = "";
-					return;
-				}
-
-				const request = new XMLHttpRequest();
-				request.open('POST','/ajax');
-				request.setRequestHeader('X-CSRFToken', cookies['csrftoken']); 
-				request.onload = function() {
-					
-					// const info = JSON.parse(request.responseText);
-					// const price = info.price;
-					var price = request.responseText;
-					h3.innerHTML = "Price: $" + price;
-
-				};
-
-				const data = new FormData();
-				data.append('type', type);
-				data.append('size', size);
-				data.append('token', "{% csrf_token %}")
-				request.send(data);
-			});
+			element.addEventListener('change', update);
 		});
+
+
+		document.getElementsByName('toppings').forEach(function(element) {
+			element.addEventListener('change', update);
+		});
+
+
 
 		// stop FORM from submitting if empty
 		document.querySelector('form').onsubmit = function() {
