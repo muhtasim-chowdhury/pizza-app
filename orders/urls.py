@@ -10,5 +10,7 @@ urlpatterns = [
     path("ajax", views.ajax, name="ajax"),
     path("addtocart", views.addtocart, name="addtocart"),
     path("shoppingcart", views.shoppingcart, name="shoppingcart"),
-    path("checkout", views.checkout, name="checkout")
+    path("checkout", views.checkout, name="checkout"),
+    path("clear", views.clear, name="clear"),
+    path("clean", views.clean, name="clean")
 ]

@@ -11,12 +11,11 @@ Register
 	<a href="{% url 'logout' %}">Logout</a>
 	<span id="user">{{ user.username }}</span>
 </nav>
-<h1>Welcome to Artichoke Basielle Pizza</h1>
-
-<h2>Menu</h2>
+<h1>Artichoke Basielle Pizza's Menu</h1>
 
 <form action="{% url 'addtocart' %}" method="post">
 	{% csrf_token %}
+	<h2>Pizzas</h2>
 	<select name="pizza" class="input">
 			<option value="0">---------</option>
 		{% for pizza in pizzas %}
@@ -37,12 +36,51 @@ Register
 	</div>
 
 	<!-- subs -->
+	<h2>Subs</h2>
 	<select name="sub" class="input">
 			<option value="0">---------</option>
 		{% for sub in subs %}
 			<option value="{{ sub.id }}">{{ sub.size }} {{ sub.kind }} Sub</option>
 		{% endfor %}
 	</select>
+
+	<!-- pastas -->
+	<h2>Pastas</h2>
+	<select name="pasta" class="input">
+			<option value="0">---------</option>
+		{% for pasta in pastas %}
+			<option value="{{ pasta.id }}">{{ pasta.name }}</option>
+		{% endfor %}
+	</select>
+
+
+	<!-- salads -->
+	<h2>Salads</h2>
+	<select name="salad" class="input">
+			<option value="0">---------</option>
+		{% for salad in salads %}
+			<option value="{{ salad.id }}">{{ salad.name }}</option>
+		{% endfor %}
+	</select>
+
+
+	<!-- Dinner Platters -->
+	<h2>Dinner Platters</h2>
+	<select name="platter" class="input">
+			<option value="0">---------</option>
+		{% for platter in platters %}
+			<option value="{{ platter.id }}">{{ platter.size }} {{ platter.name }} Platter</option>
+		{% endfor %}
+	</select>
+
+
+
+
+
+
+
+
+
 	
 
 
@@ -71,6 +109,9 @@ Register
 	var type = select[0].value;
 	var size = select[1].value;
 	var sub = select[2].value;
+	var pasta = select[3].value;
+	var salad = select[4].value;
+	var platter = select[5].value;
 	const h3 = document.querySelector('h3');
 	
 	// update total price
@@ -79,7 +120,9 @@ Register
 		type = select[0].value;
 		size = select[1].value;
 		sub = select[2].value;
-
+		pasta = select[3].value;
+		salad = select[4].value;
+		platter = select[5].value;
 		// fetch toppings from checked boxes
 		var t = document.getElementsByName('toppings');
 		var arr = []
@@ -89,7 +132,7 @@ Register
 		}
 		
 
-		if ((type == 0 || size == 0) && sub == 0) { 
+		if ((type == 0 || size == 0) && sub == 0 && pasta ==0 && salad == 0 && platter == 0) { 
 			h3.innerHTML = "";
 			return;
 		}
@@ -108,10 +151,11 @@ Register
 		const data = new FormData();
 		data.append('type', type);
 		data.append('size', size);
-		// include toppings
 		data.append('toppings', arr);
-		// include subs
 		data.append('subs', sub);
+		data.append('pastas', pasta);
+		data.append('salads', salad);
+		data.append('platters', platter);
 		data.append('token', "{% csrf_token %}")
 		request.send(data);
 	}
@@ -132,7 +176,7 @@ Register
 
 		// stop FORM from submitting if empty
 		document.querySelector('form').onsubmit = function() {
-			if (type == 0 || size == 0) { 
+			if ((type == 0 || size == 0) && sub == 0 && pasta ==0 && salad == 0 && platter == 0) { 
 					return false;
 				}
 			return true;

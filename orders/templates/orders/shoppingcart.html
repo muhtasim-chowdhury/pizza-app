@@ -17,40 +17,66 @@ Register
 <ul>
 {% for pizza in pizzas %}
 <li>{{ pizza.size}} {{ pizza.pizza }} {{ pizza.name }}  {{ pizza.items }} Pizza</li>
-<li id="price">Price: ${{ pizza.price }}</li>
 
 <!-- Toppings -->
-
 <li id="toppings">Toppings: 
-	{% for topping in pizza.topping_set %}
-		{{topping}}
-
-	{% empty %}
-	No toppings
-	{% endfor %}
-	
+	{% for topping in pizza.topping_set %}	{{topping}}	
+	{% empty %}	No toppings	{% endfor %}
 </li>
-
+<li id="price">Price: ${{ pizza.price }}</li>
 <br>
+{% endfor %}
 
-{% empty %}
-<li>Cart empty</li>
+
+{% for sub in subs %}
+<li>{{ sub.size}} {{ sub.kind }} Sub</li>
+<li id="price">Price: ${{ sub.price }}</li>
+<br>
+{% endfor %}
+
+
+{% for pasta in pastas %}
+<li>{{ pasta.name }}</li>
+<li id="price">Price: ${{ pasta.price }}</li>
+<br>
+{% endfor %}
+
+
+{% for salad in salads %}
+<li>{{ salad.name }}</li>
+<li id="price">Price: ${{ salad.price }}</li>
+<br>
+{% endfor %}
+
+{% for platter in platters %}
+<li>{{ platter.size}} {{ platter.name }} Platter</li>
+<li id="price">Price: ${{ platter.price }}</li>
+<br>
 {% endfor %}
 
 <!-- Total for entire cart -->
 {% if total %}
 <li>Total: ${{ total }}</li>
+{% else %}
+Cart Empty
 {% endif %}
 
 
 </ul>
 
 {% if total %}
-<form action="{% url 'checkout' %}", method="post">
+<div id='form'>
+<form action="{% url 'checkout' %}", method="post" id="form_checkout">
 	{% csrf_token %}
-	<input type="submit" value="Checkout" class="input">
+	<input type="submit" value="Checkout" id="input_checkout">
 </form>
+<form action="{% url 'clear' %}", method="get" id="form_clear">
+	{% csrf_token %}
+	<input type="submit" value="Clear Cart" id="input_clear">
+</form>
+</div>
 {% endif %}
+
 
 <script>
 	document.addEventListener('DOMContentLoaded', function() {

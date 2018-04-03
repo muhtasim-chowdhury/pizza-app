@@ -36,7 +36,6 @@ ul {
 }
 #toppings {
 	padding-left: 20px;
-	margin-bottom: 10px;
 }
 
 #checkbox {
@@ -48,4 +47,18 @@ ul {
 	column-gap: 20px;
 	margin: 0 auto;
 	
+}
+#form {
+	margin: 0 auto;
+	width: 410px;
+}
+#form_checkout, #form_clear {
+	display: inline-block;
+}
+#input_checkout, #input_clear {
+	width: 150px;
+	height: 40px;
+}
+#input_checkout {
+	margin-right: 100px;
 }
